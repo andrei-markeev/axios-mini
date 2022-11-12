@@ -1,0 +1,16 @@
+{
+  "name": "@andrei-markeev/axios-mini",
+  "version": "0.0.1",
+  "description": "",
+  "types": "dist/axios-mini.d.ts",
+  "main": "dist/axios-mini.js",
+  "keywords": [],
+  "author": "Andrei Markeev",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^18.11.9"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
