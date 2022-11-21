@@ -1,6 +1,6 @@
 {
   "name": "@andrei-markeev/axios-mini",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "types": "dist/axios-mini.d.ts",
   "main": "dist/axios-mini.js",

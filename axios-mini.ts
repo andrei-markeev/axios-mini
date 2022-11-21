@@ -9,7 +9,7 @@ export interface AxiosOptions {
     body?: Object | string;
     followredirect?: boolean;
     agent?: Agent;
-    responseType?: "stream";
+    responseType?: "arraybuffer" | "stream";
 }
 
 export interface AxiosResponse<T> {
@@ -41,8 +41,6 @@ export default function axios<T>(url: string, options: AxiosOptions = {}): Promi
         console.log(`${method} ${url}`);
 
         const req = client.request(clientOptions, res => {
-            let resBody = "";
-
             if (res.statusCode &&
                 res.statusCode >= 300 &&
                 res.statusCode < 400 &&
@@ -67,18 +65,27 @@ export default function axios<T>(url: string, options: AxiosOptions = {}): Promi
                     data: stream as any
                 });
 
+            let chunks: Buffer[] = [];
             stream.on("data", data => {
-                resBody += data
+                chunks.push(data);
             });
 
-            stream.on("end", () =>
+            stream.on("end", () => {
+                const buffer = Buffer.concat(chunks);
+                let data: T;
+                if (options.responseType === "arraybuffer")
+                    data = buffer as T;
+                else {
+                    const resBody = buffer.toString("utf8");
+                    data = (res.headers["content-type"] || "").startsWith("application/json") ? JSON.parse(resBody) : resBody;
+                }
                 resolve({
                     headers: res.headers,
                     status: res.statusCode || 0,
                     statusText: res.statusMessage,
-                    data: (res.headers["content-type"] || "").startsWith("application/json") ? JSON.parse(resBody) : resBody
+                    data
                 })
-            );
+            });
 
             stream.on("error", err => reject(err));
         });
@@ -104,3 +111,4 @@ axios.post = <T>(url: string, body: AxiosOptions["body"], options: AxiosOptions)
 axios.put = <T>(url: string, body: AxiosOptions["body"], options: AxiosOptions) => axios<T>(url, { ...options, body, method: "PUT" });
 axios.delete = <T>(url: string, options: AxiosOptions) => axios<T>(url, { ...options, method: "DELETE" });
 axios.getStream = (url: string, options: AxiosOptions) => axios<Stream>(url, { ...options, responseType: "stream" });
+axios.getBuffer = (url: string, options: AxiosOptions) => axios<Buffer>(url, { ...options, responseType: "arraybuffer" });
